@@ -3,6 +3,7 @@ PropTypes = require 'prop-types'
 CreateReactClass = require 'create-react-class'
 
 ReactCountdownClock = CreateReactClass
+  _tmax: 0
   _seconds: 0
   _radius: null
   _fraction: null
@@ -15,9 +16,11 @@ ReactCountdownClock = CreateReactClass
 
   componentDidUpdate: (prevProps) ->
     if prevProps.seconds != @props.seconds
-      @_seconds = @_startSeconds()
+      @_seconds = @_initSeconds()
       @_stopTimer()
       @_setupTimer()
+      @_seconds = @_startSeconds()
+      @_startTimer() unless @props.paused
 
     if prevProps.color != @props.color
       @_drawBackground()
@@ -28,11 +31,16 @@ ReactCountdownClock = CreateReactClass
       @_pauseTimer() if @props.paused
 
   componentDidMount: ->
-    @_seconds = @_startSeconds()
+    @_seconds = @_initSeconds()
     @_setupTimer()
+    @_seconds = @_startSeconds()
+    @_startTimer() unless @props.paused
 
   componentWillUnmount: ->
     @_cancelTimer()
+
+  _initSeconds: ->
+    if @props.initsec then @props.initsec else @props.seconds - 0.01
 
   _startSeconds: ->
     # To prevent a brief flash of the start time when not paused
@@ -43,7 +51,6 @@ ReactCountdownClock = CreateReactClass
     @_setupCanvases()
     @_drawBackground()
     @_drawTimer()
-    @_startTimer() unless @props.paused
 
   _updateCanvas: ->
     @_clearTimer()
